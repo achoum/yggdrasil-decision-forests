@@ -4,6 +4,8 @@
 # Common flags.
 common --experimental_repo_remote_exec
 
+startup:windows --output_user_root=C:/tmp
+
 # Required for bazel <=4, fails with bazel >= 5.
 # common --incompatible_restrict_string_escapes=false
 

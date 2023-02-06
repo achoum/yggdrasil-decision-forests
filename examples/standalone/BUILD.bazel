@@ -6,6 +6,7 @@ package(
 cc_binary(
     name = "beginner_cc",
     srcs = ["beginner.cc"],
+    tags = ["manual"],
     deps = [
         "@com_google_absl//absl/flags:flag",
         "@ydf//yggdrasil_decision_forests/dataset:all_dataset_formats",
@@ -21,5 +22,54 @@ cc_binary(
         "@ydf//yggdrasil_decision_forests/utils:filesystem",
         "@ydf//yggdrasil_decision_forests/utils:logging",
     ],
-    tags = ["manual"],
+)
+
+# Based on https://github.com/bazelbuild/bazel/blob/master/examples/windows/dll/BUILD
+cc_binary(
+    name = "ydf.dll",
+    srcs = [
+        "dll.cc",
+        "dll.h",
+    ],
+    copts = ["/DCOMPILING_DLL"],
+    linkshared = 1,
+    deps = [
+        "@com_google_absl//absl/flags:flag",
+        "@ydf//yggdrasil_decision_forests/dataset:all_dataset_formats",
+        "@ydf//yggdrasil_decision_forests/dataset:data_spec",
+        "@ydf//yggdrasil_decision_forests/dataset:data_spec_cc_proto",
+        "@ydf//yggdrasil_decision_forests/dataset:data_spec_inference",
+        "@ydf//yggdrasil_decision_forests/dataset:vertical_dataset_io",
+        "@ydf//yggdrasil_decision_forests/learner:all_learners",
+        "@ydf//yggdrasil_decision_forests/learner:learner_library",
+        "@ydf//yggdrasil_decision_forests/metric",
+        "@ydf//yggdrasil_decision_forests/metric:report",
+        "@ydf//yggdrasil_decision_forests/model:model_library",
+        "@ydf//yggdrasil_decision_forests/utils:filesystem",
+        "@ydf//yggdrasil_decision_forests/utils:logging",
+    ],
+)
+
+filegroup(
+    name = "ydf_import_lib",
+    srcs = [":ydf.dll"],
+    output_group = "interface_library",
+)
+
+cc_import(
+    name = "ydf_dll_import",
+    interface_library = ":ydf_import_lib",
+    shared_library = ":ydf.dll",
+)
+
+cc_library(
+    name = "ydf",
+    hdrs = ["dll.h"],
+    deps = [":ydf_dll_import"],
+)
+
+cc_binary(
+    name = "example_with_dll",
+    srcs = ["example_with_dll.cc"],
+    deps = [":ydf"],
 )
